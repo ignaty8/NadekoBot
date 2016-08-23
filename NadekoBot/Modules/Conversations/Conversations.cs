@@ -8,6 +8,8 @@ using NadekoBot.Modules.Permissions.Classes;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -92,8 +94,7 @@ namespace NadekoBot.Modules.Conversations
                     });
             });
 
-            manager.CreateCommands(NadekoBot.BotMention, cgb =>
-            {
+            manager.CreateCommands(NadekoBot.BotMention, cgb => {
                 var client = manager.Client;
 
                 cgb.AddCheck(PermissionChecker.Instance);
@@ -102,15 +103,12 @@ namespace NadekoBot.Modules.Conversations
 
                 cgb.CreateCommand("die")
                     .Description("Works only for the owner. Shuts the bot down. | `@NadekoBot die`")
-                    .Do(async e =>
-                    {
-                        if (NadekoBot.IsOwner(e.User.Id))
-                        {
+                    .Do(async e => {
+                        if (NadekoBot.IsOwner(e.User.Id)) {
                             await e.Channel.SendMessage(e.User.Mention + ", Yes, my love.").ConfigureAwait(false);
                             await Task.Delay(5000).ConfigureAwait(false);
                             Environment.Exit(0);
-                        }
-                        else
+                        } else
                             await e.Channel.SendMessage(e.User.Mention + ", No.").ConfigureAwait(false);
                     });
 
@@ -119,8 +117,7 @@ namespace NadekoBot.Modules.Conversations
 
                 cgb.CreateCommand("do you love me")
                     .Description("Replies with positive answer only to the bot owner. | `@NadekoBot do you love me`")
-                    .Do(async e =>
-                    {
+                    .Do(async e => {
                         if (NadekoBot.IsOwner(e.User.Id))
                             await e.Channel.SendMessage(e.User.Mention + ", Of course I do, my Master.").ConfigureAwait(false);
                         else
@@ -130,23 +127,75 @@ namespace NadekoBot.Modules.Conversations
                 cgb.CreateCommand("how are you")
                     .Alias("how are you?")
                     .Description("Replies positive only if bot owner is online. | `@NadekoBot how are you`")
-                    .Do(async e =>
-                    {
-                        if (NadekoBot.IsOwner(e.User.Id))
-                        {
+                    .Do(async e => {
+                        if (NadekoBot.IsOwner(e.User.Id)) {
                             await e.Channel.SendMessage(e.User.Mention + " I am great as long as you are here.").ConfigureAwait(false);
                             return;
                         }
                         var kw = e.Server.GetUser(NadekoBot.Creds.OwnerIds[0]);
-                        if (kw != null && kw.Status == UserStatus.Online)
-                        {
+                        if (kw != null && kw.Status == UserStatus.Online) {
                             await e.Channel.SendMessage(e.User.Mention + " I am great as long as " + kw.Mention + " is with me.").ConfigureAwait(false);
-                        }
-                        else
-                        {
+                        } else {
                             await e.Channel.SendMessage(e.User.Mention + " I am sad. My Master is not with me.").ConfigureAwait(false);
                         }
                     });
+
+                cgb.CreateCommand("ip")
+                    .Alias("ip adress")
+                    .Description("Prints bot's LAN IP in chat, for debugging & admin purposes.")
+                    .Do(async e => {
+
+                    string ipString = "Error, LAN IP not found! (Somehow :/)";
+                    var host = Dns.GetHostEntry(Dns.GetHostName());
+                    foreach (var ip in host.AddressList) {
+                        if (ip.AddressFamily == AddressFamily.InterNetwork) {
+                            ipString = ip.ToString();
+                        }
+                    }
+
+                    // Taken from stack exchange. It works, so no one asks any questions.
+                        string url = "http://checkip.dyndns.org";
+                        System.Net.WebRequest req = System.Net.WebRequest.Create(url);
+                        System.Net.WebResponse resp = req.GetResponse();
+                        System.IO.StreamReader sr = new System.IO.StreamReader(resp.GetResponseStream());
+                        string response = sr.ReadToEnd().Trim();
+                        string[] a = response.Split(':');
+                        string a2 = a[1].Substring(1);
+                        string[] a3 = a2.Split('<');
+                        string a4 = a3[0];
+                        string ipExternalString = a4;
+                        if(ipExternalString == null) {
+                            ipExternalString = "Error, WAN IP not found! (Somehow :/)";
+                        }
+
+                        
+                    /*
+                    if (ipString == null) { }
+                        ipString = "Local IP Address Not Found!");
+                    }
+                    */
+                        // IP detection code runs here.
+                        await e.Channel.SendMessage("LAN: " + ipString + "\n" + "WAN: " + ipExternalString).ConfigureAwait(false);
+
+                    });
+
+                cgb.CreateCommand("nmap")
+                   .Description("Lists all lan hosts. May take a while to process.")
+                   .Do(async e => {
+
+                       string ipString = "";
+                       var host = Dns.GetHostEntry(Dns.GetHostName());
+                       int n = 0;
+                       foreach (var ip in host.AddressList) {
+                           ipString += "\n" + n.ToString() + ": " + ip.ToString();
+                           n++;
+                       }
+                       if(ipString == "") {
+                          ipString = "Network listing failed, somehow. :/";
+                       }
+
+                       await e.Channel.SendMessage("LAN Survey Result:\n" + ipString).ConfigureAwait(false);
+                   });
 
                 cgb.CreateCommand("fire")
                     .Description("Shows a unicode fire message. Optional parameter [x] tells her how many times to repeat the fire. | `@NadekoBot fire [x]`")
