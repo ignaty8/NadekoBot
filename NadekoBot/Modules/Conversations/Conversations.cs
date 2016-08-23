@@ -126,6 +126,7 @@ namespace NadekoBot.Modules.Conversations
 
                 cgb.CreateCommand("how are you")
                     .Alias("how are you?")
+                    .Alias("how are you ?")
                     .Description("Replies positive only if bot owner is online. | `@NadekoBot how are you`")
                     .Do(async e => {
                         if (NadekoBot.IsOwner(e.User.Id)) {
@@ -137,6 +138,33 @@ namespace NadekoBot.Modules.Conversations
                             await e.Channel.SendMessage(e.User.Mention + " I am great as long as " + kw.Mention + " is with me.").ConfigureAwait(false);
                         } else {
                             await e.Channel.SendMessage(e.User.Mention + " I am sad. My Master is not with me.").ConfigureAwait(false);
+                        }
+                    });
+
+                cgb.CreateCommand("i love you")
+                    .Alias("i love you!")
+                    .Alias("i love you !")
+                    .Description("WIP")
+                    .Do(async e => {
+                        // Hardcode on purpose. I'm greedy for attention. ^^
+                        if (e.User.Id == 182203552683261952) {
+                            await e.Channel.SendMessage(e.User.Mention + " I love you too!").ConfigureAwait(false);
+                            return;
+                        } else {
+                            await e.Channel.SendMessage("Well this chat just became even more awkward...");
+                            return;
+                        }
+                    });
+
+                cgb.CreateCommand("❤")
+                    .Alias(" ❤")
+                    .Description("WIP")
+                    .Do(async e => {
+                        if (NadekoBot.IsOwner(e.User.Id)) {
+                            await e.Channel.SendMessage("❤ ❤ ❤ ❤");
+                            return;
+                        } else {
+                            await e.Channel.SendMessage("❤");
                         }
                     });
 

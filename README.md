@@ -15,4 +15,4 @@ This is a quick fork I made to keep track of my changes to the NadekoBot source 
 |----------------------------------|----:|
 | `@botName ip` or `@botName ip adress`| Prints the bot host's LAN and WAN IP addresses.|
 | `@botName nmap`|__WIP__	Lists all hosts on bot's LAN network.|
-
+| `@botName <3`| Prints hearts, more if you are a bot owner.|
